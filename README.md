@@ -10,7 +10,7 @@ A cinematic engineering archive that brings software, systems, and AI into an At
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-D88C51?style=flat-square&logo=typescript&logoColor=1D0E0B)
 ![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-4-F3E7C9?style=flat-square&logo=tailwindcss&logoColor=1D0E0B)
 
-[GitHub](https://github.com/eslamelezaby1/portfolio) · [LinkedIn](https://www.linkedin.com/in/eslamelezaby98/) · [Email](mailto:eslamelezaby1@gmail.com)
+[Live Website](https://eslamelezaby.vercel.app/) · [GitHub](https://github.com/eslamelezaby1/portfolio) · [LinkedIn](https://www.linkedin.com/in/eslamelezaby98/) · [Email](mailto:eslamelezaby1@gmail.com)
 
 </div>
 
@@ -160,3 +160,4 @@ See [Vercel’s Git deployment guide](https://vercel.com/docs/git). The project 
 - **Display font:** [Goth Titan by Juan Casco](https://www.fontspace.com/goth-titan-font-f77855). Its included [license](app/fonts/LICENSE.md) permits personal use; commercial use requires permission from the designer. The supplied file lacks outlines for many capitals, so display titles use lowercase lettering.
 
 No general open-source license is declared for this repository. Third-party art and fonts retain their own ownership and licensing terms.
+
