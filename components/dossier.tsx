@@ -1,3 +1,0 @@
-import Image from 'next/image';
-import {Insignia} from './archive-art';
-export default function Dossier(){return <div className="dossier-portrait"><div className="portrait-topline"><span>PERSONNEL / EE-001</span><Insignia/></div><div className="portrait-frame"><Image src="/assets/images/eslam-professional-portrait.png" alt="Eslam Elezaby professional portrait" width={350} height={390} sizes="(max-width:600px) 85vw, 300px"/><span className="portrait-cross top">+</span><span className="portrait-cross bottom">+</span><span className="portrait-caption">ENGINEER PORTRAIT</span></div><div className="dossier-seal">ENGINEERING CORPS<span>PERSONNEL ARCHIVE</span></div></div>}

@@ -6,11 +6,6 @@ export const experience = [
  {company:'Stoork',period:'2023 — 2025',location:'Remote',summary:'Engineering the commerce experience.',details:['Delivered mobile and backend functionality for e-commerce products.','Integrated payments, push notifications, and analytics.','Contributed to Agile planning, sprint delivery, and backlog prioritization.'],tags:['E-commerce','REST APIs','Payments','Agile']},
  {company:'ECMPP',period:'2020 — 2023',location:'Egypt',summary:'Connected experiences. Even offline.',details:['Built Flutter applications for mobile and desktop, from requirements to deployment.','Implemented SQLite storage for offline and hybrid workflows.','Integrated Firestore for real-time data synchronization and user management.'],tags:['Flutter','SQLite','Firestore','Desktop']}
 ];
-export const missions = [
- {number:'01',title:'Intelligent mobile experiences',company:'SSGIT',text:'Production app workflows connected to recommendation models and real-time detection services.',tags:['Flutter','ML integration','Backend services']},
- {number:'02',title:'Commerce, connected',company:'Stoork',text:'Mobile and backend features bringing payments, notifications, and analytics into e-commerce products.',tags:['Mobile','Payments','Analytics']},
- {number:'03',title:'Built for life offline',company:'ECMPP',text:'Cross-platform applications with local SQLite storage and cloud-backed Firestore synchronization.',tags:['Flutter','SQLite','Firebase']}
-];
 export const skills = [
  {icon:'◇',name:'Mobile engineering',items:['Flutter','Dart','Android & iOS','Provider','Riverpod','Bloc','GetX']},
  {icon:'⌘',name:'Backend & cloud',items:['Node.js','REST APIs','Firebase','AWS','Google Cloud']},

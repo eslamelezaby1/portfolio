@@ -1,4 +1,4 @@
-# Eslam Elezaby — The Engineer’s Field Notes
+# Eslam Elezaby — Software Engineer
 
 A personal portfolio presented as an open engineering notebook. Built with Next.js, TypeScript, and Tailwind CSS.
 
@@ -10,14 +10,14 @@ A personal portfolio presented as an open engineering notebook. Built with Next.
 
 ## The experience
 
-An ivory paper interface with editorial typography, a subtle book binding, and copper accents. Desktop shows an identity page beside the current chapter. Mobile becomes a single page with a chapter menu.
+An ivory paper interface with editorial typography and copper accents. Desktop shows sequential two-page spreads. Phones and tablets show one page at a time, with content fitted to the available screen height. A personalized portrait cover opens and closes the book.
 
 - A first-screen book cover that opens into the portfolio with paper motion and sound.
 - Six chapters: about, experience, selected work, open source, AI explorations, and contact.
 - Text-only product entries with direct website, App Store, and Google Play links.
 - Flutter packages, a Chrome extension, and the Hotel Voice AI Agent prototype.
 - A real flipbook powered by react-pageflip: draggable corners, hard covers, paper shadows, mouse-wheel navigation, and optional page-turn sound.
-- Previous/next controls, arrow-key navigation, shareable chapter hashes, and browser history support.
+- Previous/next controls, arrow-key navigation, direct chapter links, and a brief first-open tutorial.
 - Day and night editions, visible keyboard focus, and reduced-motion support.
 - Downloadable PDF CV served through a Next.js route handler.
 
