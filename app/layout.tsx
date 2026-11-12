@@ -1,6 +1,4 @@
-import type { Metadata } from 'next';
-import localFont from 'next/font/local';
+import type {Metadata} from 'next';
 import './globals.css';
-const gothTitan = localFont({src:'./fonts/GothTitan.ttf',variable:'--font-titan',display:'swap',weight:'400'});
-export const metadata: Metadata = { title: 'Eslam Elezaby | Software Engineer', description: 'Software Engineer in Dubai. 5+ years building cross-platform applications, backend services, and cloud solutions.' };
-export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en" className={gothTitan.variable}><body>{children}</body></html>}
+export const metadata:Metadata={metadataBase:new URL('https://eslamelezaby.vercel.app'),title:'Eslam Elezaby — The Engineer’s Field Notes',description:'Software engineer in Dubai. A notebook of mobile applications, connected systems, open-source tools, and practical AI.',openGraph:{title:'Eslam Elezaby — Software Engineer',description:'Notes on building useful software.',type:'website'}};
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
