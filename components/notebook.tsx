@@ -2,6 +2,7 @@
 import {forwardRef,useEffect,useRef,useState} from 'react';
 import HTMLFlipBook from 'react-pageflip';
 import Image from 'next/image';
+import CursorHighlight from './cursor-highlight';
 type PageFlip={flipNext:(corner?:'top'|'bottom')=>void;flipPrev:(corner?:'top'|'bottom')=>void;flip:(page:number)=>void};
 import {PaperSound} from '@/lib/paper-sound';
 import {chapters,products,tools} from '@/lib/notebook';
@@ -23,20 +24,59 @@ export default function Notebook(){
  const host=useRef<HTMLDivElement>(null);
  const sound=useRef<PaperSound|null>(null);
  const enabled=useRef(true);
- const pageRef=useRef(0);
+ const pageRef=useRef(0);const selectingText=useRef(false);const selectionCooldown=useRef(0);
  const [page,setPage]=useState(0);const [showFlipHint,setShowFlipHint]=useState(false);const hintShown=useRef(false);const hintTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const [muted,setMuted]=useState(false);
  const [dark,setDark]=useState(false);
  const [size,setSize]=useState<{width:number;height:number;duration:number;single:boolean}|null>(null);
  const reduced=useRef(false);
  useEffect(()=>{reduced.current=window.matchMedia('(prefers-reduced-motion: reduce)').matches;const target=host.current;if(!target)return;const observer=new ResizeObserver(([entry])=>{const single=window.innerWidth<=1024;const width=Math.floor(Math.min(650,entry.contentRect.width/(single?1:2)));const height=Math.floor(entry.contentRect.height);if(width>0&&height>0)setSize(old=>old?.width===width&&old.height===height&&old.single===single?old:{width,height,duration:reduced.current?1:600,single})});observer.observe(target);return()=>{observer.disconnect();sound.current?.close();if(hintTimer.current)clearTimeout(hintTimer.current)}},[]);
+ // Native text selection takes priority over every flipbook gesture.
+ useEffect(()=>{
+  const target=host.current;if(!target)return;
+  const selector='.flip-content,.flip-folio,.front-cover h2,.front-cover p,.cover-edition';
+  const start=(event:Event)=>{
+   const element=event.target instanceof Element?event.target:null;
+   if(element?.closest(selector)){
+    selectingText.current=true;
+    event.stopPropagation();
+   }
+  };
+  const move=(event:Event)=>{if(selectingText.current)event.stopPropagation()};
+  const end=(event:Event)=>{
+   if(!selectingText.current)return;
+   event.stopPropagation();
+   selectingText.current=false;
+   selectionCooldown.current=performance.now()+400;
+  };
+  const reset=()=>{selectingText.current=false};
+  target.addEventListener('mousedown',start,true);
+  target.addEventListener('touchstart',start,{capture:true,passive:true});
+  window.addEventListener('mousemove',move,true);
+  window.addEventListener('touchmove',move,{capture:true,passive:true});
+  window.addEventListener('mouseup',end,true);
+  window.addEventListener('touchend',end,true);
+  window.addEventListener('touchcancel',end,true);
+  window.addEventListener('blur',reset);
+  return()=>{
+   target.removeEventListener('mousedown',start,true);
+   target.removeEventListener('touchstart',start,true);
+   window.removeEventListener('mousemove',move,true);
+   window.removeEventListener('touchmove',move,true);
+   window.removeEventListener('mouseup',end,true);
+   window.removeEventListener('touchend',end,true);
+   window.removeEventListener('touchcancel',end,true);
+   window.removeEventListener('blur',reset);
+  };
+ },[]);
  const flip=(direction:number)=>{const engine=book.current?.pageFlip();if(!engine)return;if(direction>0)engine.flipNext('bottom');else engine.flipPrev('bottom')};
- useEffect(()=>{const key=(event:KeyboardEvent)=>{if(event.altKey||event.ctrlKey||event.metaKey)return;if(event.key==='ArrowRight'){event.preventDefault();book.current?.pageFlip().flipNext('bottom')}if(event.key==='ArrowLeft'){event.preventDefault();book.current?.pageFlip().flipPrev('bottom')}};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key)},[]);
+ useEffect(()=>{const key=(event:KeyboardEvent)=>{if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey||selectingText.current||window.getSelection()?.toString()||(event.target instanceof Element&&event.target.closest('input,textarea,select,[contenteditable="true"]')))return;if(event.key==='ArrowRight'){event.preventDefault();book.current?.pageFlip().flipNext('bottom')}if(event.key==='ArrowLeft'){event.preventDefault();book.current?.pageFlip().flipPrev('bottom')}};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key)},[]);
  useEffect(()=>{
   const target=host.current;if(!target)return;
   let total=0;let last=0;let lockedUntil=0;
   const wheel=(event:WheelEvent)=>{
    if(event.ctrlKey)return;
+   if(selectingText.current||performance.now()<selectionCooldown.current||window.getSelection()?.toString().trim()){event.preventDefault();total=0;return;}
    const raw=Math.abs(event.deltaX)>Math.abs(event.deltaY)?event.deltaX:event.deltaY;
    if(!raw)return;
    const delta=raw*(event.deltaMode===1?16:event.deltaMode===2?target.clientHeight:1);
@@ -56,5 +96,5 @@ export default function Notebook(){
   };
   target.addEventListener('wheel',wheel,{passive:false});
   return()=>target.removeEventListener('wheel',wheel);
- },[]); return <div className={'flipbook-site'+(dark?' night-edition':'')}><header className="flip-toolbar"><a href="#" className="desk-brand" onClick={event=>{event.preventDefault();book.current?.pageFlip().flip(0)}}>ESLAM ELEZABY <span>/ FIELD NOTES</span></a><nav className="spread-tabs" aria-label="Book spreads">{[1,3,5].map((n,i)=><button key={n} onClick={()=>book.current?.pageFlip().flip(n)} aria-current={page>=n&&page<n+2?'page':undefined}>{chapters[i*2].page}–{chapters[i*2+1].page}</button>)}</nav><button className="sound-button" aria-label={muted?'Enable page sound':'Mute page sound'} aria-pressed={!muted} onClick={()=>{enabled.current=muted;setMuted(!muted)}}>{muted?'♪':'♫'}</button><button className="theme-button" aria-label="Toggle night edition" onClick={()=>setDark(!dark)}>{dark?'☾':'☼'}</button><a className="flip-cv" href="/api/cv">CV</a></header><div className={'flip-shell'+(page===0?' showing-front-cover':page===7?' showing-back-cover':'')} ref={host}>{size&&<HTMLFlipBook key={`${size.width}-${size.height}-${size.single}`} ref={book} width={size.width} height={size.height} size="fixed" minWidth={100} maxWidth={650} minHeight={200} maxHeight={2000} startPage={page} drawShadow flippingTime={size.duration} usePortrait={size.single} startZIndex={1} autoSize={false} maxShadowOpacity={.35} showCover mobileScrollSupport={false} clickEventForward useMouseEvents swipeDistance={8} showPageCorners disableFlipByClick={false} className="real-flipbook" style={{}} onInit={event=>{const index=chapters.findIndex(chapter=>chapter.id===window.location.hash.slice(1));if(index>=0)event.object.turnToPage(index+1)}} onFlip={event=>{if(event.data>0&&event.data<7&&!hintShown.current){hintShown.current=true;setShowFlipHint(true);hintTimer.current=setTimeout(()=>setShowFlipHint(false),5200)}else if(hintShown.current){setShowFlipHint(false)}pageRef.current=event.data;setPage(event.data);const index=event.data===0||event.data===7?-1:Math.floor((event.data-1)/2)*2;window.history.replaceState(null,'',window.location.pathname+(index>=0?'#'+chapters[index].id:''))}} onChangeState={event=>{if(event.data==='flipping'&&enabled.current){sound.current??=new PaperSound();sound.current.play()}}}><Cover onOpen={()=>flip(1)}/>{chapters.map((chapter,index)=><PaperPage key={chapter.id} index={index}/>)}<Cover back onOpen={()=>flip(-1)}/></HTMLFlipBook>}{showFlipHint&&<div className="flip-onboarding" role="status"><div className="hint-curl" aria-hidden="true"/><div className="hint-gesture" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="M19 28V10a3 3 0 0 1 6 0v12l2-2a3 3 0 0 1 5 2l2-1a3 3 0 0 1 4 3v9c0 7-5 11-11 11h-3c-4 0-7-2-9-5L8 29a3 3 0 0 1 4-4l7 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg><span>←</span></div><div className="hint-message"><strong>This book has real turning pages.</strong><span>Swipe, scroll, or tap the corner to turn.</span></div></div>}</div><footer className="flip-controls"><button onClick={()=>flip(-1)} disabled={page===0} aria-label="Previous spread">← Previous</button><span>{page===0?'FRONT COVER':page===7?'BACK COVER':size?.single?(page+' / 6'):`${page%2?page:page-1}–${page%2?page+1:page} / 6`}<small>Scroll, click an edge, or swipe to turn</small></span><button onClick={()=>flip(1)} disabled={page===7} aria-label="Next spread">Next →</button></footer></div>
+ },[]); return <div className={'flipbook-site'+(dark?' night-edition':'')}><CursorHighlight/><header className="flip-toolbar"><a href="#" className="desk-brand" onClick={event=>{event.preventDefault();book.current?.pageFlip().flip(0)}}>ESLAM ELEZABY <span>/ FIELD NOTES</span></a><nav className="spread-tabs" aria-label="Book spreads">{[1,3,5].map((n,i)=><button key={n} onClick={()=>book.current?.pageFlip().flip(n)} aria-current={page>=n&&page<n+2?'page':undefined}>{chapters[i*2].page}–{chapters[i*2+1].page}</button>)}</nav><button className="sound-button" aria-label={muted?'Enable page sound':'Mute page sound'} aria-pressed={!muted} onClick={()=>{enabled.current=muted;setMuted(!muted)}}>{muted?'♪':'♫'}</button><button className="theme-button" aria-label="Toggle night edition" onClick={()=>setDark(!dark)}>{dark?'☾':'☼'}</button><a className="flip-cv" href="/api/cv">CV</a></header><div className={'flip-shell'+(page===0?' showing-front-cover':page===7?' showing-back-cover':'')} ref={host}>{size&&<HTMLFlipBook key={`${size.width}-${size.height}-${size.single}`} ref={book} width={size.width} height={size.height} size="fixed" minWidth={100} maxWidth={650} minHeight={200} maxHeight={2000} startPage={page} drawShadow flippingTime={size.duration} usePortrait={size.single} startZIndex={1} autoSize={false} maxShadowOpacity={.35} showCover mobileScrollSupport={false} clickEventForward useMouseEvents swipeDistance={8} showPageCorners disableFlipByClick className="real-flipbook" style={{}} onInit={event=>{const index=chapters.findIndex(chapter=>chapter.id===window.location.hash.slice(1));if(index>=0)event.object.turnToPage(index+1)}} onFlip={event=>{if(event.data>0&&event.data<7&&!hintShown.current){hintShown.current=true;setShowFlipHint(true);hintTimer.current=setTimeout(()=>setShowFlipHint(false),5200)}else if(hintShown.current){setShowFlipHint(false)}pageRef.current=event.data;setPage(event.data);const index=event.data===0||event.data===7?-1:Math.floor((event.data-1)/2)*2;window.history.replaceState(null,'',window.location.pathname+(index>=0?'#'+chapters[index].id:''))}} onChangeState={event=>{if(event.data==='flipping'&&enabled.current){sound.current??=new PaperSound();sound.current.play()}}}><Cover onOpen={()=>flip(1)}/>{chapters.map((chapter,index)=><PaperPage key={chapter.id} index={index}/>)}<Cover back onOpen={()=>flip(-1)}/></HTMLFlipBook>}{showFlipHint&&<div className="flip-onboarding" role="status"><div className="hint-curl" aria-hidden="true"/><div className="hint-gesture" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="M19 28V10a3 3 0 0 1 6 0v12l2-2a3 3 0 0 1 5 2l2-1a3 3 0 0 1 4 3v9c0 7-5 11-11 11h-3c-4 0-7-2-9-5L8 29a3 3 0 0 1 4-4l7 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg><span>←</span></div><div className="hint-message"><strong>This book has real turning pages.</strong><span>Drag a corner, scroll, or use the arrows to turn.</span></div></div>}</div><footer className="flip-controls"><button onClick={()=>flip(-1)} disabled={page===0} aria-label="Previous spread">← Previous</button><span>{page===0?'FRONT COVER':page===7?'BACK COVER':size?.single?(page+' / 6'):`${page%2?page:page-1}–${page%2?page+1:page} / 6`}<small>Select text freely. Use the corners or arrows to turn.</small></span><button onClick={()=>flip(1)} disabled={page===7} aria-label="Next spread">Next →</button></footer></div>
 }
