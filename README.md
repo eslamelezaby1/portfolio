@@ -2,7 +2,7 @@
 
 A personal portfolio presented as an open engineering notebook. Built with Next.js, TypeScript, and Tailwind CSS.
 
-[Live website](https://eslamelezaby.vercel.app/) · [LinkedIn](https://www.linkedin.com/in/eslamelezaby98/) · [GitHub](https://github.com/eslamelezaby1)
+[Live website](https://eslamelezaby.vercel.app/) · [LinkedIn](https://www.linkedin.com/in/eslamelezaby98/) · [GitHub](https://github.com/eslamelezaby98)
 
 ![Desktop notebook portfolio](docs/screenshots/desktop.jpg)
 
